@@ -1,0 +1,107 @@
+---
+title: "Understanding RAG: How LLMs Can Search Your Own Documents"
+description: "Retrieval-Augmented Generation lets you combine the power of LLMs with your own private data. Here's how it works, with a working Python example."
+date: 2026-02-15
+tags: ["ai", "python", "langchain", "rag"]
+featured: true
+---
+
+Large language models know a lot — but they don't know *your* data. They can't answer questions about your internal docs, your codebase, or last week's meeting notes. That's where **RAG** comes in.
+
+## What Is RAG?
+
+**Retrieval-Augmented Generation** is a technique that augments an LLM's response by first retrieving relevant information from an external source, then passing that context into the prompt.
+
+The flow looks like this:
+
+1. User asks a question
+2. System converts the question into a vector embedding
+3. A vector database is searched for similar document chunks
+4. The top results are injected into the LLM prompt
+5. LLM generates an answer grounded in the retrieved context
+
+This means the LLM isn't "guessing" — it's reading your documents before answering.
+
+## Building a Simple RAG Pipeline
+
+Let's build one with LangChain and OpenAI.
+
+### 1. Install Dependencies
+
+```bash
+pip install langchain langchain-openai langchain-community chromadb
+```
+
+### 2. Load and Split Documents
+
+```python
+from langchain_community.document_loaders import TextLoader
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+loader = TextLoader("my_docs.txt")
+documents = loader.load()
+
+splitter = RecursiveCharacterTextSplitter(
+    chunk_size=500,
+    chunk_overlap=50
+)
+chunks = splitter.split_documents(documents)
+```
+
+### 3. Create a Vector Store
+
+```python
+from langchain_openai import OpenAIEmbeddings
+from langchain_community.vectorstores import Chroma
+
+embeddings = OpenAIEmbeddings()
+vectorstore = Chroma.from_documents(chunks, embeddings)
+retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
+```
+
+### 4. Build the RAG Chain
+
+```python
+from langchain_openai import ChatOpenAI
+from langchain.chains import RetrievalQA
+
+llm = ChatOpenAI(model="gpt-4o", temperature=0)
+
+qa_chain = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=retriever,
+    return_source_documents=True
+)
+
+result = qa_chain.invoke({"query": "What is our refund policy?"})
+print(result["result"])
+```
+
+## Key Concepts to Understand
+
+### Chunking Strategy
+
+How you split documents matters enormously. Too large, and you'll send irrelevant context. Too small, and you lose semantic meaning. A `chunk_size` of 300–600 tokens with 10% overlap is a good starting point.
+
+### Embedding Models
+
+The embedding model converts text into a vector. Better embeddings = more accurate retrieval. OpenAI's `text-embedding-3-small` is cheap and excellent.
+
+### Re-ranking
+
+For production systems, add a re-ranking step after retrieval. This scores retrieved chunks by relevance before passing to the LLM. Libraries like `Cohere Rerank` make this straightforward.
+
+## When RAG Is the Right Choice
+
+Use RAG when:
+- You have **private or proprietary data** the LLM doesn't know
+- You need **up-to-date information** (LLMs have a knowledge cutoff)
+- You need to **cite sources** (retrieved chunks give you provenance)
+
+Don't use RAG when a simple fine-tuned model or prompt engineering is enough.
+
+## What's Next
+
+RAG is just the beginning. Multi-hop retrieval, agentic RAG, and graph RAG are pushing the boundaries further. But this simple pipeline solves 80% of real-world use cases.
+
+Try building it. The learning curve is worth it.

@@ -81,7 +81,7 @@ const displayProjects = featuredProjects.length > 0
               description={post.data.description}
               date={post.data.date}
               tags={post.data.tags}
-              slug={post.id}
+              slug={post.id.replace(/\.(mdx?|md)$/, '')}
             />
           ))}
         </div>

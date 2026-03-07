@@ -1,0 +1,78 @@
+---
+title: "Why I Built My Blog with Astro — and You Should Too"
+description: "After exploring Next.js, Hugo, and plain HTML, I landed on Astro. Here's what makes it the right tool for content-first websites in 2026."
+date: 2026-03-01
+tags: ["astro", "web-development", "blog"]
+featured: true
+---
+
+When I decided to start writing publicly, the first question wasn't *what* to write — it was *where*. I looked at WordPress, Ghost, Hashnode, and every static site generator imaginable. I ended up building my own with **Astro**, and I haven't looked back.
+
+Here's why.
+
+## The Problem with Most Blog Stacks
+
+Most frameworks assume you're building an *app*, not a *document*. React, Vue, Angular — they're brilliant for interactive UIs. But a blog post? It's mostly text, some code, maybe an image. Shipping 100KB of JavaScript to render a `<p>` tag is overkill.
+
+I wanted something that:
+- Shipped **zero unnecessary JavaScript** by default
+- Let me write in **Markdown / MDX** natively
+- Had **great syntax highlighting** out of the box
+- Could be deployed for **free**, forever
+
+Astro ticks every box.
+
+## What Makes Astro Different
+
+### Islands Architecture
+
+Astro renders everything to HTML at build time. If you need interactivity (a toggle, a search box), you opt-in with an *island* — a small, isolated interactive component. Everything else stays as static HTML.
+
+```astro
+---
+// This runs at build time. Zero JS sent to browser.
+const posts = await getCollection('blog');
+---
+
+<ul>
+  {posts.map(post => <li>{post.data.title}</li>)}
+</ul>
+```
+
+### MDX Support
+
+MDX lets you embed components inside Markdown. Want a custom callout box or an interactive demo? Import it right into your post.
+
+```mdx
+import Callout from '../components/Callout.astro';
+
+This is regular markdown.
+
+<Callout type="info">
+  This is a custom component rendered inside a blog post.
+</Callout>
+```
+
+### Built-in Content Collections
+
+Astro's content collections give you **type-safe frontmatter**. Define a schema with Zod, and Astro validates every post at build time. Typo in a date? Build fails. Wrong type for a field? Build fails. No silent bugs in production.
+
+```ts
+const blog = defineCollection({
+  schema: z.object({
+    title: z.string(),
+    date: z.coerce.date(),
+    tags: z.array(z.string()).default([]),
+  }),
+});
+```
+
+## Performance
+
+My blog gets a perfect Lighthouse score out of the box. No configuration, no tricks. Because the output is just HTML + CSS. There's nothing to optimize.
+
+## The Verdict
+
+If you're building a blog, portfolio, or any content-heavy site — Astro is the right choice in 2026. It's fast to build with, fast to load, and free to host on Vercel or Netlify.
+
+The source for this blog is on [GitHub](https://github.com/AnaswaraNV/my-tech-blog). Feel free to use it as a starting point.

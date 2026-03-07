@@ -5,13 +5,21 @@ import BlogPostLayout from '../../layouts/BlogPostLayout.astro';
 export async function getStaticPaths() {
   const posts = await getCollection('blog', ({ data }) => !data.draft);
   return posts.map((post) => ({
-    params: { slug: post.id },
+    // Strip file extension so URLs are /blog/my-post not /blog/my-post.mdx
+    params: { slug: post.id.replace(/\.(mdx?|md)$/, '') },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, remarkPluginFrontmatter } = await render(post);
+const minutesRead = remarkPluginFrontmatter?.minutesRead as number | undefined;
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const related = allPosts
+  .filter((p) => p.id !== post.id && p.data.tags.some((t) => post.data.tags.includes(t)))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 2);
 ---
 
 <BlogPostLayout
@@ -20,6 +28,8 @@ const { Content } = await render(post);
   date={post.data.date}
   tags={post.data.tags}
   image={post.data.image}
+  minutesRead={minutesRead}
+  related={related}
 >
   <Content />
 </BlogPostLayout>

@@ -1,0 +1,146 @@
+---
+title: "Spring Boot REST API Best Practices I Wish I Knew Earlier"
+description: "From exception handling to response structure, here are the patterns that separate good Spring Boot APIs from great ones."
+date: 2026-01-20
+tags: ["java", "spring-boot", "backend", "api"]
+featured: false
+---
+
+After building production Spring Boot APIs for a few years, there are patterns I wish someone had shown me earlier. Here are the ones that make the biggest difference.
+
+## 1. Use a Consistent Response Wrapper
+
+Don't return raw objects from controllers. Wrap everything in a consistent response envelope.
+
+```java
+@Data
+@AllArgsConstructor
+public class ApiResponse<T> {
+    private boolean success;
+    private String message;
+    private T data;
+
+    public static <T> ApiResponse<T> ok(T data) {
+        return new ApiResponse<>(true, "Success", data);
+    }
+
+    public static <T> ApiResponse<T> error(String message) {
+        return new ApiResponse<>(false, message, null);
+    }
+}
+```
+
+Now every endpoint looks like:
+
+```java
+@GetMapping("/{id}")
+public ResponseEntity<ApiResponse<UserDto>> getUser(@PathVariable Long id) {
+    UserDto user = userService.findById(id);
+    return ResponseEntity.ok(ApiResponse.ok(user));
+}
+```
+
+Your frontend team will thank you.
+
+## 2. Centralise Exception Handling
+
+Never catch exceptions in controllers and return error responses manually. Use `@RestControllerAdvice`.
+
+```java
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotFound(ResourceNotFoundException ex) {
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(ApiResponse.error(ex.getMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error ->
+            errors.put(error.getField(), error.getDefaultMessage())
+        );
+        return ResponseEntity
+            .status(HttpStatus.BAD_REQUEST)
+            .body(new ApiResponse<>(false, "Validation failed", errors));
+    }
+}
+```
+
+## 3. Use DTOs, Not Entities
+
+Never expose your JPA entities directly. Always map to DTOs. This decouples your API contract from your database schema.
+
+```java
+public record UserDto(Long id, String name, String email) {}
+
+// In UserService
+public UserDto findById(Long id) {
+    User user = userRepository.findById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("User not found: " + id));
+    return new UserDto(user.getId(), user.getName(), user.getEmail());
+}
+```
+
+Using Java Records for DTOs keeps the code clean and immutable.
+
+## 4. Always Validate Input
+
+Add `@Valid` on request bodies and use Bean Validation annotations.
+
+```java
+public record CreateUserRequest(
+    @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name must be under 100 characters")
+    String name,
+
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
+    String email
+) {}
+
+@PostMapping
+public ResponseEntity<ApiResponse<UserDto>> createUser(
+        @Valid @RequestBody CreateUserRequest request) {
+    // input is guaranteed to be valid here
+    UserDto user = userService.create(request);
+    return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(user));
+}
+```
+
+## 5. Version Your API from Day One
+
+You will need to break changes eventually. Start versioned.
+
+```java
+@RequestMapping("/api/v1/users")
+@RestController
+public class UserController { }
+```
+
+When you need v2, create a new controller rather than adding `if` checks inside existing endpoints.
+
+## 6. Use Pageable for List Endpoints
+
+Never return unbounded lists. Spring Data makes pagination trivial.
+
+```java
+@GetMapping
+public ResponseEntity<Page<UserDto>> listUsers(
+        @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
+        Pageable pageable) {
+    return ResponseEntity.ok(userService.findAll(pageable));
+}
+```
+
+The client passes `?page=0&size=10&sort=name,asc` and Spring handles the rest.
+
+## Putting It Together
+
+These six patterns — consistent response wrapper, global exception handling, DTOs, input validation, API versioning, and pagination — are the foundation of a maintainable Spring Boot API.
+
+None of them are revolutionary. But applying all of them consistently from the start saves enormous pain later. Start with these and build from there.
