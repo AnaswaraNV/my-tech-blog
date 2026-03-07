@@ -1,0 +1,105 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const posts = allPosts.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+---
+
+<BaseLayout
+  title="Blog"
+  description="Articles on AI, software development, system design, and things I find interesting."
+>
+  <main class="flex-1 max-w-5xl mx-auto px-4 sm:px-6 py-12">
+    <div class="mb-10">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-3">
+        Blog
+      </h1>
+      <p class="text-slate-600 dark:text-slate-400">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'} on AI, web development, and more.
+      </p>
+    </div>
+
+    <!-- Tag filter -->
+    {allTags.length > 0 && (
+      <div class="flex flex-wrap gap-2 mb-10" id="tag-filter">
+        <button
+          data-tag="all"
+          class="tag-btn px-3 py-1.5 text-sm rounded-full border border-indigo-500 bg-indigo-500 text-white transition-colors"
+        >
+          All
+        </button>
+        {allTags.map((tag) => (
+          <button
+            data-tag={tag}
+            class="tag-btn px-3 py-1.5 text-sm rounded-full border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+          >
+            #{tag}
+          </button>
+        ))}
+      </div>
+    )}
+
+    <!-- Posts grid -->
+    {posts.length > 0 ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3" id="posts-grid">
+        {posts.map((post) => (
+          <div data-tags={post.data.tags.join(',')}>
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.date}
+              tags={post.data.tags}
+              slug={post.id}
+            />
+          </div>
+        ))}
+      </div>
+      <p id="no-results" class="hidden text-center text-slate-500 dark:text-slate-400 py-12">
+        No posts found for this tag.
+      </p>
+    ) : (
+      <div class="text-center py-20">
+        <p class="text-slate-500 dark:text-slate-400 text-lg">No posts yet. Check back soon!</p>
+      </div>
+    )}
+  </main>
+</BaseLayout>
+
+<script>
+  const tagBtns = document.querySelectorAll<HTMLButtonElement>('.tag-btn');
+  const postCards = document.querySelectorAll<HTMLElement>('#posts-grid > [data-tags]');
+  const noResults = document.getElementById('no-results')!;
+
+  let activeTag = 'all';
+
+  tagBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      activeTag = btn.dataset.tag ?? 'all';
+
+      tagBtns.forEach((b) => {
+        const isActive = b.dataset.tag === activeTag;
+        b.classList.toggle('bg-indigo-500', isActive);
+        b.classList.toggle('border-indigo-500', isActive);
+        b.classList.toggle('text-white', isActive);
+        b.classList.toggle('border-slate-300', !isActive);
+        b.classList.toggle('dark:border-slate-700', !isActive);
+        b.classList.toggle('text-slate-600', !isActive);
+        b.classList.toggle('dark:text-slate-400', !isActive);
+      });
+
+      let visible = 0;
+      postCards.forEach((card) => {
+        const tags = card.dataset.tags?.split(',') ?? [];
+        const show = activeTag === 'all' || tags.includes(activeTag);
+        card.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+
+      noResults.classList.toggle('hidden', visible > 0);
+    });
+  });
+</script>

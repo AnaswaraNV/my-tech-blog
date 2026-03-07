@@ -1,0 +1,80 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+const skills = [
+  { category: 'Languages', items: ['Java', 'Python', 'TypeScript', 'JavaScript', 'SQL'] },
+  { category: 'Frontend', items: ['Angular', 'React', 'Astro', 'Tailwind CSS'] },
+  { category: 'Backend', items: ['Spring Boot', 'Node.js', 'REST APIs', 'GraphQL'] },
+  { category: 'AI & Data', items: ['LangChain', 'OpenAI API', 'RAG', 'Vector DBs'] },
+  { category: 'DevOps & Cloud', items: ['Docker', 'GitHub Actions', 'AWS', 'Vercel'] },
+];
+
+const socials = [
+  { label: 'GitHub', href: 'https://github.com/AnaswaraNV', icon: 'gh' },
+  { label: 'LinkedIn', href: 'https://linkedin.com/in/anaswara-nv', icon: 'li' },
+  { label: 'Email', href: 'mailto:anaswaranv91@gmail.com', icon: 'em' },
+];
+---
+
+<BaseLayout
+  title="About"
+  description="Learn more about Anaswara NV — software developer, learner, and writer."
+>
+  <main class="flex-1 max-w-3xl mx-auto px-4 sm:px-6 py-12">
+    <!-- Intro -->
+    <section class="mb-14">
+      <h1 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6">
+        About Me
+      </h1>
+      <div class="space-y-4 text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
+        <p>
+          Hi, I'm <span class="font-semibold text-slate-900 dark:text-slate-100">Anaswara NV</span> — a software developer with a passion for building well-crafted software and exploring what's possible at the intersection of AI and engineering.
+        </p>
+        <p>
+          I work across the full stack — from Spring Boot backends and Angular frontends to AI-powered pipelines and developer tooling. I'm especially interested in how large language models can be integrated into real products.
+        </p>
+        <p>
+          This site is where I share ideas, document what I learn, and showcase the things I build. If something resonates, I'd love to connect.
+        </p>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section class="mb-14">
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">Skills</h2>
+      <div class="space-y-5">
+        {skills.map(({ category, items }) => (
+          <div>
+            <p class="text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+              {category}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              {items.map((item) => (
+                <span class="px-3 py-1 text-sm rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                  {item}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <!-- Connect -->
+    <section>
+      <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100 mb-6">Let's Connect</h2>
+      <div class="flex flex-wrap gap-4">
+        {socials.map(({ label, href }) => (
+          <a
+            href={href}
+            target={href.startsWith('mailto') ? undefined : '_blank'}
+            rel="noopener noreferrer"
+            class="px-5 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium text-sm transition-colors"
+          >
+            {label}
+          </a>
+        ))}
+      </div>
+    </section>
+  </main>
+</BaseLayout>

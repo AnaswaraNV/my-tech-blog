@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
 
 interface Props {
   title: string;
@@ -70,6 +72,8 @@ const fullTitle = title === 'Home' ? 'Anaswara NV — Tech Blog & Portfolio' : `
     </script>
   </head>
   <body class="min-h-screen flex flex-col bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+    <Header />
     <slot />
+    <Footer />
   </body>
 </html>

@@ -1,0 +1,35 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-slate-200 dark:border-slate-800 mt-auto">
+  <div class="max-w-5xl mx-auto px-4 sm:px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p class="text-sm text-slate-500 dark:text-slate-400">
+      © {year} Anaswara NV · Built with <a href="https://astro.build" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Astro</a>
+    </p>
+    <div class="flex items-center gap-5 text-sm">
+      <a
+        href="https://github.com/AnaswaraNV"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+      >
+        GitHub
+      </a>
+      <a
+        href="https://linkedin.com/in/anaswara-nv"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+      >
+        LinkedIn
+      </a>
+      <a
+        href="/rss.xml"
+        class="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
+      >
+        RSS
+      </a>
+    </div>
+  </div>
+</footer>

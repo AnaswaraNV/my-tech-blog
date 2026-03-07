@@ -1,17 +1,127 @@
 ---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import ProjectCard from '../components/ProjectCard.astro';
 
+const allPosts = await getCollection('blog', ({ data }) => !data.draft);
+const featuredPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .filter((p) => p.data.featured)
+  .slice(0, 3);
+
+const recentPosts = allPosts
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf())
+  .slice(0, 3);
+
+const displayPosts = featuredPosts.length > 0 ? featuredPosts : recentPosts;
+
+const allProjects = await getCollection('portfolio');
+const featuredProjects = allProjects
+  .sort((a, b) => a.data.order - b.data.order)
+  .filter((p) => p.data.featured)
+  .slice(0, 3);
+
+const displayProjects = featuredProjects.length > 0
+  ? featuredProjects
+  : allProjects.sort((a, b) => a.data.order - b.data.order).slice(0, 3);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="Home"
+  description="I'm Anaswara NV — a software developer writing about AI, web development, and engineering ideas."
+>
+  <main class="flex-1">
+    <!-- Hero -->
+    <section class="max-w-5xl mx-auto px-4 sm:px-6 py-20 sm:py-28">
+      <div class="max-w-2xl">
+        <p class="text-indigo-600 dark:text-indigo-400 font-medium mb-3">Hey there, I'm</p>
+        <h1 class="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 dark:text-slate-100 mb-6">
+          Anaswara NV
+        </h1>
+        <p class="text-xl text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+          Software developer passionate about AI, clean architecture, and building things that matter.
+          I write about what I learn, build, and think about.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a
+            href="/blog"
+            class="px-6 py-3 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors"
+          >
+            Read the Blog
+          </a>
+          <a
+            href="/portfolio"
+            class="px-6 py-3 rounded-lg border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-medium transition-colors"
+          >
+            View Portfolio
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Posts -->
+    {displayPosts.length > 0 && (
+      <section class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            {featuredPosts.length > 0 ? 'Featured Posts' : 'Recent Posts'}
+          </h2>
+          <a
+            href="/blog"
+            class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            View all →
+          </a>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {displayPosts.map((post) => (
+            <BlogCard
+              title={post.data.title}
+              description={post.data.description}
+              date={post.data.date}
+              tags={post.data.tags}
+              slug={post.id}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Featured Projects -->
+    {displayProjects.length > 0 && (
+      <section class="max-w-5xl mx-auto px-4 sm:px-6 py-12">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            {featuredProjects.length > 0 ? 'Featured Projects' : 'Projects'}
+          </h2>
+          <a
+            href="/portfolio"
+            class="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+          >
+            View all →
+          </a>
+        </div>
+        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {displayProjects.map((project) => (
+            <ProjectCard
+              title={project.data.title}
+              description={project.data.description}
+              tech={project.data.tech}
+              github={project.data.github}
+              demo={project.data.demo}
+              image={project.data.image}
+            />
+          ))}
+        </div>
+      </section>
+    )}
+
+    <!-- Empty state when no content yet -->
+    {displayPosts.length === 0 && displayProjects.length === 0 && (
+      <section class="max-w-5xl mx-auto px-4 sm:px-6 py-12 text-center">
+        <p class="text-slate-500 dark:text-slate-400">Posts and projects coming soon.</p>
+      </section>
+    )}
+  </main>
+</BaseLayout>
