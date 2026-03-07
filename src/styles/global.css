@@ -1,2 +1,33 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Enable dark: variant via data-theme attribute on <html> */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Syntax highlighting tweaks for dark mode */
+[data-theme="dark"] pre {
+  background-color: #1e293b !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
