@@ -8,7 +8,7 @@ import { remarkReadingTime } from './src/plugins/remark-reading-time.mjs';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://my-tech-blog.vercel.app',
+  site: 'https://my-tech-blog-ruby.vercel.app',
   integrations: [mdx(), sitemap()],
 
   markdown: {

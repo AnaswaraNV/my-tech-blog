@@ -20,7 +20,7 @@ const {
   date,
 } = Astro.props;
 
-const siteUrl = Astro.site?.toString() ?? 'https://my-tech-blog.vercel.app';
+const siteUrl = Astro.site?.toString() ?? 'https://my-tech-blog-ruby.vercel.app';
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).href;
 const ogImage = image.startsWith('http') ? image : new URL(image, siteUrl).href;
 const fullTitle = title === 'Home' ? 'Anaswara NV — Tech Blog & Portfolio' : `${title} · Anaswara NV`;
