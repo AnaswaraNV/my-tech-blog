@@ -1,3 +1,7 @@
+#blog url
+
+https://my-tech-blog-ruby.vercel.app/
+
 # Astro Starter Kit: Minimal
 
 ```sh
